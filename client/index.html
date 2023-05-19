@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Получение данных о билетах на самолет</h1>
+    <input type="text" placeholder="введите город отправления(аббривиатуры аэропортов)" class="cityOut">
+    <input type="text" placeholder="введите город назначения(аббривиатуры аэропортов)" class="cityIn">
+    <input type="date" id="dateFrom">
+    <input type="date" id="dateTo">
+    <button class="but">отправить</button>
+    <div>
+        <a href="http://www.galaxylogistics.ru/analitika/kodyi-aeroportov-mira-po-iata-iata.html">аббревиатуры
+            аэропортов</a>
+        <br>
+        <a href="https://codesandbox.io/s/mw5utv">здесь необходимый список для рендеринга городов</a>
+        <br>
+        взяли <a href="https://ant.design/components/select">здесь</a>
+    </div>
+    <script>
+        let cityOut = document.querySelector(".cityOut");
+        let cityIn = document.querySelector(".cityIn");
+        let but = document.querySelector(".but");
+
+
+        but.onclick = () => {
+            // let dateFrom = dateFrom.value;
+            // let dateTo = dateTo.value;
+
+            fetch(`http://localhost:5000/get-route-fly?dateFrom=${dateFrom.value}&dateTo=${dateTo.value}&cityFrom=${cityOut.value}&cityTo=${cityIn.value}`)
+                .then(response => response.json())
+                .then((json) => console.log(json))
+        }
+    </script>
+</body>
+
+</html>
