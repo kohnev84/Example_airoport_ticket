@@ -16,7 +16,7 @@ app.get('/get-route-fly', function (req, res) {
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: `https://api.travelpayouts.com/aviasales/v3/prices_for_dates?origin=${req.query.cityFrom}&destination=${req.query.cityTo}&departure_at=${req.query.dateFrom}&return_at=${req.query.dateTo}&unique=false&sorting=price&direct=false&cy=rub&limit=30&page=1&one_way=true&token=YOURAPITOKEN`,
+        url: `https://api.travelpayouts.com/aviasales/v3/prices_for_dates?origin=${req.query.cityFrom}&destination=${req.query.cityTo}&departure_at=${req.query.dateFrom}&return_at=${req.query.dateTo}&unique=false&sorting=price&direct=false&cy=rub&limit=30&page=1&one_way=true&token=40fd58e43a1636e15bf02e3a2f041403`,
         headers: {
             'authority': 'api.travelpayouts.com',
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -48,6 +48,79 @@ app.get('/get-route-fly', function (req, res) {
 
 app.get('/get-route-train', function (req, res) {
     console.log(req.query);
+    let data = JSON.stringify({
+        "Origin": "2000000",
+        "Destination": "2064188",
+        "DepartureDate": "2023-05-26T00:00:00",
+        "TimeFrom": 0,
+        "TimeTo": 24,
+        "CarGrouping": "DontGroup",
+        "GetByLocalTime": true,
+        "SpecialPlacesDemand": "StandardPlacesAndForDisabledPersons"
+    });
+
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://ticket.rzd.ru/apib2b/p/Railway/V1/Search/TrainPricing?service_provider=B2B_RZD',
+        headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en-GB;q=0.7,en;q=0.6',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json',
+            'Cookie': 'lang=ru; ClientUid=oy1DomAhqwgUxXVjDfH3fwjAz5yEv9L1; _ym_uid=1684569897875550858; _ym_d=1684569897; tmr_lvid=1dde89412cca36ecc87ca2de53d07a00; tmr_lvidTS=1684569897567; session-cookie=1761780dcea9ef4cf4ced3c3beb261f515b93755220f30d4927d7c318c79cd7a61227463cd587d045e8dce15947bb3f4; LANG_SITE=ru; _ym_isad=2; _gid=GA1.2.1766719489.1684759864; accessible=false; _gat_gtag_UA_153814051_1=1; _ym_visorc=b; _ga=GA1.1.1426537825.1684569898; _ga_J932X5NKG9=GS1.1.1684824690.3.1.1684824725.0.0.0; session-cookie=1761af48c3c0b966f4ced3c3beb261f51e606b06ab17a8260dc4bb9caaa5a2426542015171bb43ff9fe1a060dab88e92',
+            'Origin': 'https://ticket.rzd.ru',
+            'Referer': 'https://ticket.rzd.ru/searchresults/v/1/5a323c29340c7441a0a556bb/5a13ba89340c745ca1e7ebbe/2023-05-24/2023-05-31',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+            'sec-ch-ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sentry-trace': '1763b902c9cb445298c32288a4a31018-9330dfc74df20cf1-1'
+        },
+        data: data
+    };
+
+    axios.request(config)
+        .then((response) => {
+            // console.log(JSON.stringify(response.data));
+            let trains = response.data.Trains;
+            console.log({ trains });
+            for (let i = 0; i < 1; i++) {
+
+                console.log(trains[i].DisplayTrainNumber);
+
+                let url = 'https://ticket.rzd.ru/api/v1/railway/carpricing/lite';
+                let data2 = {
+                    "OriginCode": trains[i].OriginStationCode,
+                    "DestinationCode": trains[i].DestinationStationCode,
+                    "DepartureDate": trains[i].DepartureDateTime,
+                    "TrainNumber": trains[i].DisplayTrainNumber,
+                    "OnlyFpkBranded": false,
+                    "SpecialPlacesDemand": "StandardPlacesAndForDisabledPersons"
+                }
+                config.url = url;
+                config.data = data2;
+                // console.log({ config });
+                axios.request(config)
+                    .then((res) => {
+                        // console.log(JSON.stringify(res.data));
+                        trains[i].MinPrice = 'on data2';
+                        trains[i].MinPrice = res.data
+                        console.log(res.data);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            }
+            response.data.trains = trains
+            res.json({ result: response.data })
+        })
+        .catch((error) => {
+            console.log(error);
+        });
 })
 
 app.listen(5000, console.log("Server work"));

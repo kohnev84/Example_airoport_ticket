@@ -10,8 +10,8 @@
 
 <body>
     <h1>Получение данных о билетах на самолет</h1>
-    <input type="text" placeholder="введите город отправления(аббривиатуры аэропортов)" class="cityOut">
-    <input type="text" placeholder="введите город назначения(аббривиатуры аэропортов)" class="cityIn">
+    <input type="text" value="MOW" placeholder="введите город отправления(аббривиатуры аэропортов)" class="cityOut">
+    <input type="text" value="DXB" placeholder="введите город назначения(аббривиатуры аэропортов)" class="cityIn">
     <input type="date" id="dateFrom">
     <input type="date" id="dateTo">
     <button class="but">отправить</button>
@@ -23,19 +23,71 @@
         <br>
         взяли <a href="https://ant.design/components/select">здесь</a>
     </div>
+
+    <div id="container"></div>
+
+    <hr style="border: 2px solid black;">
+
+    <h2>Получение данных о билетах на поезд </h2>
+    <input type="text" value="" placeholder="введите город отправления" class="trainCityOut">
+    <input type="text" value="" placeholder="введите город назначения" class="trainCityIn">
+    <input type="date" id="dateFromTrain">
+    <input type="date" id="dateToTrain">
+    <button class="but2">отправить</button>
+    <div id="container2"></div>
     <script>
         let cityOut = document.querySelector(".cityOut");
         let cityIn = document.querySelector(".cityIn");
         let but = document.querySelector(".but");
-
+        let trainCityOut = document.querySelector(".trainCityOut");
+        let trainCityIn = document.querySelector(".trainCityIn");
+        let but2 = document.querySelector(".but2");
 
         but.onclick = () => {
             // let dateFrom = dateFrom.value;
             // let dateTo = dateTo.value;
 
+            // {
+            // "origin": "MOW",
+            // "destination": "DXB",
+            // "origin_airport": "VKO",
+            // "destination_airport": "DWC",
+            // "price": 23911,
+            // "airline": "DP",
+            // "flight_number": "991",
+            // "departure_at": "2023-05-29T11:40:00+03:00",
+            // "return_at": "2023-06-06T08:30:00+04:00",
+            // "transfers": 0,
+            // "return_transfers": 0,
+            // "duration": 680,
+            // "duration_to": 330,
+            // "duration_back": 350,
+            // "link": "/search/MOW2905DXB06061?t=DP16853496001685369400000330VKODWC16860258001686046800000350DWCVKO_9dc2595121efd3f0891390ed7472b112_23911&search_date=22052023&expected_price_uuid=671a4ad1-9ddb-436e-a46f-ec1ec93f0b24&expected_price_currency=rub"
+            // }
+
             fetch(`http://localhost:5000/get-route-fly?dateFrom=${dateFrom.value}&dateTo=${dateTo.value}&cityFrom=${cityOut.value}&cityTo=${cityIn.value}`)
                 .then(response => response.json())
-                .then((json) => console.log(json))
+                .then((json) => {
+                    let data = json.result.data;
+                    for (let i = 0; i < data.length; i++) {
+
+                        container.innerHTML += `<div>Номер рейса: ${data[i].flight_number}, дата рейса: ${data[i].departure_at.substring(0, 10)}, время вылета: ${data[i].departure_at.substring(11, 16)}, стоимость: ${data[i].price} руб.</div>`
+                    }
+                })
+        }
+
+        but2.onclick = () => {
+            fetch(`http://localhost:5000/get-route-train?dateFromTrain=${dateFromTrain.value}&dateToTrain=${dateToTrain.value}&trainCityOut=${trainCityOut.value}&trainCityIn=${trainCityIn.value}`)
+                .then(res => res.json())
+                .then((req) => {
+                    console.log({ req });
+                    let dataTrain = req.result.Trains;
+                    for (let i = 0; i < dataTrain.length; i++) {
+
+                        let dataTrain = req.result.Trains;
+                        container2.innerHTML += `<div>Номер поезда: ${dataTrain[i].DisplayTrainNumber}, дата рейса: ${dataTrain[i].DepartureDateTime.substring(0, 10)}, время выезда: ${dataTrain[i].DepartureDateTime.substring(11, 16)}, дата прибытия: ${dataTrain[i].ArrivalDateTime.substring(0, 10)}, время прибытия: ${dataTrain[i].ArrivalDateTime.substring(11, 16)}, стоимость: ${dataTrain[i].MinPrice}</div>`
+                    }
+                })
         }
     </script>
 </body>
